@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Trash2, CheckCircle, AlertCircle, ReceiptText } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { ListingImage } from "@/components/listing-image";
 import { EmailGateCard } from "@/components/email-gate-card";
@@ -15,12 +15,22 @@ export default function YourListingsPage() {
 
   const [input, setInput] = useState("");
   const [email, setEmail] = useState("");
+  const [stripeOnboarded, setStripeOnboarded] = useState(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("marketplace:email") ?? "";
     setInput(stored);
     setEmail(stored);
   }, []);
+
+  useEffect(() => {
+    if (!email) { setStripeOnboarded(null); return; }
+    setStripeOnboarded(null);
+    fetch(`/api/stripe/connect?email=${encodeURIComponent(email)}`)
+      .then((r) => r.json())
+      .then((d) => setStripeOnboarded(d.onboarded))
+      .catch(() => setStripeOnboarded(false));
+  }, [email]);
 
   const userListings = email
     ? listings.filter((l) => l.seller_email === email)
@@ -40,21 +50,38 @@ export default function YourListingsPage() {
         <h1 className="mb-1 text-2xl font-bold">Your listings</h1>
 
         {email ? (
-          <p className="mb-4 text-sm text-muted-foreground">
-            Showing listings for <span className="font-medium text-foreground">{email}</span>
-            {" · "}
-            <button
-              type="button"
-              onClick={() => {
-                try { localStorage.removeItem("marketplace:email"); } catch {}
-                setInput("");
-                setEmail("");
-              }}
-              className="underline hover:text-foreground"
-            >
-              Logout
-            </button>
-          </p>
+          <div className="mb-4 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Showing listings for <span className="font-medium text-foreground">{email}</span>
+              {" · "}
+              <button
+                type="button"
+                onClick={() => {
+                  try { localStorage.removeItem("marketplace:email"); } catch {}
+                  setInput("");
+                  setEmail("");
+                }}
+                className="underline hover:text-foreground"
+              >
+                Logout
+              </button>
+            </p>
+            {stripeOnboarded === true && (
+              <p className="flex items-center gap-1.5 text-sm text-green-700">
+                <CheckCircle className="h-4 w-4 shrink-0" />
+                Connected to Stripe
+              </p>
+            )}
+            {stripeOnboarded === false && (
+              <p className="flex items-center gap-1.5 text-sm text-amber-700">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                Not connected to Stripe yet.{" "}
+                <Link href={`/connect`} className="underline hover:text-amber-900">
+                  Connect now
+                </Link>
+              </p>
+            )}
+          </div>
         ) : (
           <EmailGateCard
             value={input}
@@ -81,6 +108,13 @@ export default function YourListingsPage() {
                   <p className="text-sm">{formatPrice(l.price)}</p>
                   <p className="text-xs text-muted-foreground">Listed {timeAgo(l.createdAt)}</p>
                 </Link>
+                {stripeOnboarded && (
+                  <Button variant="ghost" size="icon" aria-label="View order details" asChild>
+                    <Link href={`/item/${l.id}/orders`}>
+                      <ReceiptText className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"

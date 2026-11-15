@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleHelp, PlusCircle, Tag } from "lucide-react";
+import { CircleHelp, PlusCircle, Tag, Zap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useMarketplace } from "@/lib/marketplace-context";
@@ -10,6 +10,7 @@ import { useMarketplace } from "@/lib/marketplace-context";
 const sellLinks = [
   { href: "/create", label: "Create new listing", icon: PlusCircle },
   { href: "/your-listings", label: "Your listings", icon: Tag },
+  { href: "/connect", label: "Connect with Stripe", icon: Zap },
   { href: "/help", label: "Seller help", icon: CircleHelp },
 ];
 

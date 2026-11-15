@@ -26,6 +26,7 @@ function rowToListing(row, userEmail) {
     image: row.image_url ?? "",
     description: row.description ?? "",
     createdAt: new Date(row.created_at).getTime(),
+    sold: row.sold ?? false,
     mine: userEmail ? row.seller_email === userEmail : false,
   };
 }
@@ -43,19 +44,24 @@ export function MarketplaceProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    async function fetchListings() {
-      const { data, error } = await supabase
-        .from("listings")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        setListings(data.map((row) => rowToListing(row, userEmail)));
-      }
-      setLoaded(true);
-    }
     fetchListings();
   }, [userEmail]);
+
+  async function fetchListings() {
+    const { data, error } = await supabase
+      .from("listings")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setListings(data.map((row) => rowToListing(row, userEmail)));
+    }
+    setLoaded(true);
+  }
+
+  async function refreshListings() {
+    await fetchListings();
+  }
 
   async function addListing(form) {
     let imageUrl = null;
@@ -115,7 +121,7 @@ export function MarketplaceProvider({ children }) {
   const userListings = listings.filter((l) => l.mine);
 
   return (
-    <MarketplaceContext.Provider value={{ listings, userListings, addListing, deleteListing, loaded }}>
+    <MarketplaceContext.Provider value={{ listings, userListings, addListing, deleteListing, refreshListings, loaded }}>
       {children}
     </MarketplaceContext.Provider>
   );
