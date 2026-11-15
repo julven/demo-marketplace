@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CircleHelp, PlusCircle, Tag, Zap } from "lucide-react";
@@ -7,18 +8,23 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useMarketplace } from "@/lib/marketplace-context";
 
-const sellLinks = [
-  { href: "/create", label: "Create new listing", icon: PlusCircle },
-  { href: "/your-listings", label: "Your listings", icon: Tag },
-  { href: "/connect", label: "Connect with Stripe", icon: Zap },
-  { href: "/help", label: "Seller help", icon: CircleHelp },
-];
-
 const itemClass = "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-secondary";
 
 export function Sidebar({ activeCategory, onSelectCategory }) {
   const pathname = usePathname();
   const { listings } = useMarketplace();
+  const [hasEmail, setHasEmail] = useState(false);
+
+  useEffect(() => {
+    setHasEmail(!!localStorage.getItem("marketplace:email"));
+  }, []);
+
+  const sellLinks = [
+    { href: "/create", label: "Create new listing", icon: PlusCircle },
+    { href: "/your-listings", label: "Your listings", icon: Tag },
+    ...(hasEmail ? [{ href: "/connect", label: "Connect with Stripe", icon: Zap }] : []),
+    { href: "/help", label: "Seller help", icon: CircleHelp },
+  ];
   const categories = [...new Set(listings.map((l) => l.category))].sort();
 
   return (
