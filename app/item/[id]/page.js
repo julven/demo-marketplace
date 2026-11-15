@@ -133,8 +133,15 @@ export default function ItemPage() {
               Checking availability…
             </div>
           ) : listing.sold ? (
-            <div className="rounded-md bg-slate-100 p-4 text-center">
-              <p className="font-semibold text-slate-600">This item has been sold.</p>
+            <div className="space-y-2">
+              <div className="rounded-md bg-slate-100 p-4 text-center">
+                <p className="font-semibold text-slate-600">This item has been sold.</p>
+              </div>
+              {isOwner && sellerOnboarded && (
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/item/${listing.id}/orders`}>View Order Details</Link>
+                </Button>
+              )}
             </div>
           ) : isOwner ? (
             <div className="space-y-2">
@@ -145,11 +152,6 @@ export default function ItemPage() {
                 </p>
               )}
               <p className="rounded-md bg-secondary p-3 text-sm">This is your listing.</p>
-              {sellerOnboarded && (
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={`/item/${listing.id}/orders`}>View Order Details</Link>
-                </Button>
-              )}
             </div>
           ) : (
             <div className="space-y-3">
